@@ -1,13 +1,16 @@
 package controllers
 
 import (
+	"fmt"
 	"myapp/services"
 	"net/http"
 )
 
 type AccountController struct {
 	Controller
-	accService *services.AccountsService
+	AService *services.AccountsService
+	TService *services.TransportService
+	RService *services.RentService
 }
 
 func (t *AccountController) createRoutes() []RouteHandler {
@@ -18,7 +21,7 @@ func (t *AccountController) createRoutes() []RouteHandler {
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				//описание: получение данных о текущем аккаунте
 				//ограничения: только авторизованные пользователи
-
+				fmt.Fprintln(w, "Привет, мир!")
 			},
 		},
 		RouteHandler{
