@@ -17,31 +17,11 @@ func createMiddleware(callback func(http.ResponseWriter, *http.Request, http.Han
 	}
 }
 
-type Controller struct {
-	Path_setter func(path string, method string, handler func(w http.ResponseWriter, r *http.Request))
+type Controller interface {
+	CreateRoutes() []RouteHandler
 }
 
-func (t *Controller) createRoutes() []RouteHandler {
-	return []RouteHandler{
-		RouteHandler{
-			route:  "/path1/path2",
-			method: "GET",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-
-			},
-		},
-		RouteHandler{
-			route:  "/path1/path3",
-			method: "POST",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-
-			},
-		},
-	}
-}
-
-func (t *Controller) SetHandlers() {
-	handlers := t.createRoutes()
+func SetHandlers(path_setter func(path string, method string, handler func(w http.ResponseWriter, r *http.Request)), handlers []RouteHandler) {
 
 	for _, value := range handlers {
 		var handler http.Handler
@@ -49,7 +29,7 @@ func (t *Controller) SetHandlers() {
 		for _, middleware := range value.middlewares {
 			handler = middleware(handler)
 		}
-		t.Path_setter(value.route, value.method, handler.ServeHTTP)
+		path_setter(value.route, value.method, handler.ServeHTTP)
 	}
 
 }

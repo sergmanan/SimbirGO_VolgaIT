@@ -2,6 +2,7 @@ package services
 
 import (
 	"database/sql"
+	"log"
 
 	_ "github.com/lib/pq"
 )
@@ -34,12 +35,14 @@ func (t *TransportService) Insert(transport Transport) (int64, error) {
 		transport.CanBeRented, transport.TransportType, transport.Model, transport.Color, transport.Identifier, transport.Description, transport.Latitude, transport.Longitude, transport.MinutePrice, transport.DayPrice, transport.Account_id)
 
 	if err != nil {
+		log.Println(err)
 		return -1, err
 	}
 	var id int64
 	id, err = res.LastInsertId()
 
 	if err != nil {
+		log.Println(err)
 		return -1, err
 	}
 
@@ -52,6 +55,7 @@ func (t *TransportService) GetByID(id int) (Transport, error) {
 	err := t.db.QueryRow("SELECT canBeRented, transportType, model, color, identifier, description, latitude, longitude, minutePrice, dayPrice, account_id FROM public.\"Transports\" WHERE id = $1", id).
 		Scan(&transport.CanBeRented, &transport.TransportType, &transport.Model, &transport.Color, &transport.Identifier, &transport.Description, &transport.Latitude, &transport.Longitude, &transport.MinutePrice, &transport.DayPrice, &transport.Account_id)
 	if err != nil {
+		log.Println(err)
 		return Transport{}, err
 	}
 	return transport, nil
@@ -60,6 +64,7 @@ func (t *TransportService) GetByID(id int) (Transport, error) {
 func (t *TransportService) DeleteByID(id int) error {
 	_, err := t.db.Exec("DELETE FROM public.\"Transports\" WHERE id = $1", id)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil

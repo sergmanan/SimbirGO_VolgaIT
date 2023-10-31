@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"myapp/services"
 	"net/http"
 )
@@ -13,7 +15,7 @@ type AccountController struct {
 	RService *services.RentService
 }
 
-func (t *AccountController) createRoutes() []RouteHandler {
+func (t *AccountController) CreateRoutes() []RouteHandler {
 	return []RouteHandler{
 		RouteHandler{
 			route:  "/Account/Me",
@@ -28,6 +30,44 @@ func (t *AccountController) createRoutes() []RouteHandler {
 			route:  "/Account/SignUp",
 			method: "POST",
 			handler: func(w http.ResponseWriter, r *http.Request) {
+				var acc services.Account
+				decoder := json.NewDecoder(r.Body)
+
+				if err := decoder.Decode(&acc); err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					fmt.Fprintf(w, "Ошибка при разборе JSON: %v", err)
+					log.Println(err)
+					return
+				}
+
+				id, err := t.AService.Insert(acc)
+
+				if err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					fmt.Fprintf(w, "Ошибка при вставке: %v", err)
+					log.Println(err)
+					return
+				}
+
+				res := struct{ inserted_id int64 }{
+					inserted_id: id,
+				}
+
+				// Преобразуем структуру в JSON
+				jsonData, err := json.Marshal(res)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					fmt.Fprintf(w, "Ошибка при создании JSON: %v", err)
+					log.Println(err)
+					return
+				}
+
+				// Устанавливаем заголовок Content-Type на application/json
+				w.Header().Set("Content-Type", "application/json")
+
+				// Отправляем JSON в ответе HTTP
+				w.WriteHeader(http.StatusOK)
+				w.Write(jsonData)
 
 			},
 		},

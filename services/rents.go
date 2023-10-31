@@ -2,6 +2,7 @@ package services
 
 import (
 	"database/sql"
+	"log"
 
 	_ "github.com/lib/pq"
 )
@@ -26,12 +27,14 @@ func (t *RentService) Insert(rent Rent) (int64, error) {
 	res, err = t.db.Exec("INSERT INTO public.\"Rents\" (transport_id, tenant_id, rentType, owner_id) VALUES ($1, $2, $3, $4) RETURNING id", rent.Transport_id, rent.Tenant_id, rent.RentType, rent.Owner_id)
 
 	if err != nil {
+		log.Println(err)
 		return -1, err
 	}
 	var id int64
 	id, err = res.LastInsertId()
 
 	if err != nil {
+		log.Println(err)
 		return -1, err
 	}
 
@@ -44,6 +47,7 @@ func (t *RentService) GetByID(id int) (Rent, error) {
 	err := t.db.QueryRow("SELECT transport_id, tenant_id, rentType, owner_id FROM public.\"Rents\" WHERE id = $1", id).
 		Scan(&rent.Transport_id, &rent.Tenant_id, &rent.RentType, &rent.Owner_id)
 	if err != nil {
+		log.Println(err)
 		return Rent{}, err
 	}
 	return rent, nil
@@ -52,6 +56,7 @@ func (t *RentService) GetByID(id int) (Rent, error) {
 func (t *RentService) DeleteByID(id int) error {
 	_, err := t.db.Exec("DELETE FROM public.\"Rents\" WHERE id = $1", id)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil
